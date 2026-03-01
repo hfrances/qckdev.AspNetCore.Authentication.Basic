@@ -272,6 +272,19 @@ services
 - **Realm**: Use descriptive realm names to help clients understand the protected resource
 - **Claims**: Consider adding claims mapping in custom validators for authorization
 
+## Testing
+
+This library includes comprehensive integration tests covering credential validation, header parsing, and edge cases.
+
+**7 integration tests** validate the complete authentication pipeline:
+- Public endpoint access
+- Challenge response (WWW-Authenticate)
+- Valid and invalid credentials
+- Malformed headers
+- Edge cases (empty password, etc.)
+
+For detailed testing documentation, see [Integration Testing Guide](docs/TESTING.md).
+
 ## Supported Frameworks
 
 - .NET Core 3.1
