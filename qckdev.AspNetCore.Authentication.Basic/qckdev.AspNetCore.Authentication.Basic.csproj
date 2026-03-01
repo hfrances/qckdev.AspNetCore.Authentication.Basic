@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0;net10.0</TargetFrameworks>
+    <Version>0.1.0</Version>
+    <LangVersion>8.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <Authors>hfrances</Authors>
+    <Company>TrCode</Company>
+    <Product>qckdev.AspNetCore.Authentication.Basic (Preview)</Product>
+    <Description>Provides tools to configure Basic authentication for ASP.NET Core.</Description>
+    <PackageProjectUrl>https://github.com/hfrances/qckdev.AspNetCore.Authentication.Basic</PackageProjectUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net8.0' or '$(TargetFramework)'=='net10.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.3.9" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.1.2" />
+    <!-- Fix vulnerabilities -->
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.22" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.7.2" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="4.7.1" />
+  </ItemGroup>
+
+</Project>
