@@ -1,7 +1,7 @@
-<a href="https://www.nuget.org/packages/qckdev.AspNetCore.Authentication.Basic"><img src="https://img.shields.io/nuget/v/qckdev.AspNetCore.Authentication.Basic.svg" alt="NuGet Version"/></a>
-<a href="https://sonarcloud.io/dashboard?id=qckdev.AspNetCore.Authentication.Basic"><img src="https://sonarcloud.io/api/project_badges/measure?project=qckdev.AspNetCore.Authentication.Basic&metric=alert_status" alt="Quality Gate"/></a>
-<a href="https://sonarcloud.io/dashboard?id=qckdev.AspNetCore.Authentication.Basic"><img src="https://sonarcloud.io/api/project_badges/measure?project=qckdev.AspNetCore.Authentication.Basic&metric=coverage" alt="Code Coverage"/></a>
-<a><img src="https://hfrances.visualstudio.com/qckdev/_apis/build/status/qckdev.AspNetCore.Authentication.Basic?branchName=master" alt="Azure Pipelines Status"/></a>
+[![NuGet Version](https://img.shields.io/nuget/v/qckdev.AspNetCore.Authentication.Basic.svg)](https://www.nuget.org/packages/qckdev.AspNetCore.Authentication.Basic)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=qckdev.AspNetCore.Authentication.Basic&metric=alert_status)](https://sonarcloud.io/dashboard?id=qckdev.AspNetCore.Authentication.Basic)
+[![Code Coverage](https://sonarcloud.io/api/project_badges/measure?project=qckdev.AspNetCore.Authentication.Basic&metric=coverage)](https://sonarcloud.io/dashboard?id=qckdev.AspNetCore.Authentication.Basic)
+![Azure Pipelines Status](https://hfrances.visualstudio.com/qckdev/_apis/build/status/qckdev.AspNetCore.Authentication.Basic?branchName=master)
 
 # qckdev.AspNetCore.Authentication.Basic
 
@@ -293,10 +293,8 @@ For detailed testing documentation, see [Integration Testing Guide](docs/TESTING
 - .NET 8.0
 - .NET 10.0
 
-## License
+## 🤝 Contributing
+Issues and pull requests are welcome! See the contribution guidelines (coming soon).
 
-MIT License - See LICENSE file for details
-
-## Contributing
-
-Contributions are welcome! Please submit issues and pull requests on GitHub.
+## 📜 License
+This project is licensed under the terms of the [MIT License](LICENSE).
