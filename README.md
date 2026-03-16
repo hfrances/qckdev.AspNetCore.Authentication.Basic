@@ -17,13 +17,13 @@ This library simplifies the setup of HTTP Basic Authentication in ASP.NET Core a
 - **Generic options**: Extend `BasicAuthenticationOptions` for custom properties
 - **Multiple schemes**: Support for multiple authentication schemes
 
-## Installation
+## 🛠️ Installation
 
 ```bash
 dotnet add package qckdev.AspNetCore.Authentication.Basic
 ```
 
-## Quick Start
+## ⚡ Quick Start
 
 ### Simple Usage with Static Credentials
 
