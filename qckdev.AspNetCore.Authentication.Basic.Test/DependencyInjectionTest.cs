@@ -18,9 +18,27 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
 
         sealed class CustomValidator : IBasicAuthenticationValidator
         {
-            public Task<bool> ValidateAsync(string username, string password, CancellationToken cancellationToken = default)
+            public Task<bool> ValidateAsync(string username, string password, string authenticationScheme, CancellationToken cancellationToken = default)
             {
                 return Task.FromResult(true);
+            }
+        }
+
+        sealed class OptionsMonitorValidator : IBasicAuthenticationValidator
+        {
+            private readonly IOptionsMonitor<CredentialsBasedOptions> _optionsMonitor;
+
+            public OptionsMonitorValidator(IOptionsMonitor<CredentialsBasedOptions> optionsMonitor)
+            {
+                _optionsMonitor = optionsMonitor;
+            }
+
+            public Task<bool> ValidateAsync(string username, string password, string authenticationScheme, CancellationToken cancellationToken = default)
+            {
+                var options = _optionsMonitor.Get(authenticationScheme);
+                var isValid = string.Equals(options.Username, username, StringComparison.Ordinal)
+                    && string.Equals(options.Password, password, StringComparison.Ordinal);
+                return Task.FromResult(isValid);
             }
         }
 
@@ -41,13 +59,14 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
             var provider = services.BuildServiceProvider();
             var options = provider.GetRequiredService<IOptionsMonitor<CredentialsBasedOptions>>()
                 .Get(BasicAuthenticationDefaults.AuthenticationScheme);
-            var validator = provider.GetRequiredService<IBasicAuthenticationValidator>();
+            var validator = provider.GetRequiredService<CredentialsBasedValidator>();
 
             Assert.IsNotNull(options);
             Assert.AreEqual("Test Realm", options.Realm);
             Assert.AreEqual("testuser", options.Username);
             Assert.AreEqual("testpass", options.Password);
             Assert.IsInstanceOfType(validator, typeof(CredentialsBasedValidator));
+            Assert.AreEqual(typeof(CredentialsBasedValidator), options.ValidatorType);
         }
 
         [TestMethod]
@@ -71,6 +90,7 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
 
             Assert.AreEqual("Named Scheme", options.Realm);
             Assert.IsTrue(options.AllowEmptyCredentials);
+            Assert.AreEqual(typeof(CredentialsBasedValidator), options.ValidatorType);
         }
 
         [TestMethod]
@@ -107,11 +127,12 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
             var provider = services.BuildServiceProvider();
             var options = provider.GetRequiredService<IOptionsMonitor<BasicAuthenticationOptions>>()
                 .Get(BasicAuthenticationDefaults.AuthenticationScheme);
-            var validator = provider.GetRequiredService<IBasicAuthenticationValidator>();
+            var validator = provider.GetRequiredService<CustomValidator>();
 
             Assert.IsNotNull(options);
             Assert.AreEqual("Application", options.Realm); // Default value
             Assert.IsInstanceOfType(validator, typeof(CustomValidator));
+            Assert.AreEqual(typeof(CustomValidator), options.ValidatorType);
         }
 
         [TestMethod]
@@ -135,6 +156,7 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
 
             Assert.AreEqual("Custom Realm", customOptions.Realm);
             Assert.AreEqual("Custom Value", customOptions.CustomProperty);
+            Assert.AreEqual(typeof(CustomValidator), customOptions.ValidatorType);
         }
 
         [TestMethod]
@@ -148,8 +170,8 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
 
             var provider = services.BuildServiceProvider();
             
-            var validator1 = provider.CreateScope().ServiceProvider.GetRequiredService<IBasicAuthenticationValidator>();
-            var validator2 = provider.CreateScope().ServiceProvider.GetRequiredService<IBasicAuthenticationValidator>();
+            var validator1 = provider.CreateScope().ServiceProvider.GetRequiredService<CustomValidator>();
+            var validator2 = provider.CreateScope().ServiceProvider.GetRequiredService<CustomValidator>();
 
             Assert.IsNotNull(validator1);
             Assert.IsNotNull(validator2);
@@ -175,6 +197,89 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
 
             Assert.AreEqual("admin", options.Username);
             Assert.AreEqual("secret123", options.Password);
+            Assert.AreEqual(typeof(CredentialsBasedValidator), options.ValidatorType);
+        }
+
+        [TestMethod]
+        public void AddBasicAuthentication_NonGenericDefaultOverload_UsesCredentialsValidator()
+        {
+            var services = new ServiceCollection();
+
+            services
+                .AddAuthentication()
+                .AddBasicAuthentication(opts =>
+                {
+                    opts.Realm = "Default Realm";
+                    opts.Username = "user-1";
+                    opts.Password = "pwd-1";
+                });
+
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptionsMonitor<CredentialsBasedOptions>>()
+                .Get(BasicAuthenticationDefaults.AuthenticationScheme);
+
+            Assert.AreEqual("Default Realm", options.Realm);
+            Assert.AreEqual("user-1", options.Username);
+            Assert.AreEqual("pwd-1", options.Password);
+            Assert.AreEqual(typeof(CredentialsBasedValidator), options.ValidatorType);
+        }
+
+        [TestMethod]
+        public void AddBasicAuthentication_NonGenericNamedOverload_ConfiguresNamedScheme()
+        {
+            const string scheme = "Secondary";
+            var services = new ServiceCollection();
+
+            services
+                .AddAuthentication()
+                .AddBasicAuthentication(
+                    scheme,
+                    opts =>
+                    {
+                        opts.Realm = "Secondary Realm";
+                        opts.Username = "user-2";
+                        opts.Password = "pwd-2";
+                    });
+
+            var provider = services.BuildServiceProvider();
+            var options = provider.GetRequiredService<IOptionsMonitor<CredentialsBasedOptions>>().Get(scheme);
+
+            Assert.AreEqual("Secondary Realm", options.Realm);
+            Assert.AreEqual("user-2", options.Username);
+            Assert.AreEqual("pwd-2", options.Password);
+            Assert.AreEqual(typeof(CredentialsBasedValidator), options.ValidatorType);
+        }
+
+        [TestMethod]
+        public async Task AddBasicAuthentication_DefaultScheme_WithTValidator_CanResolveNamedOptionsViaGet()
+        {
+            var services = new ServiceCollection();
+
+            services
+                .AddAuthentication()
+                .AddBasicAuthentication<OptionsMonitorValidator, CredentialsBasedOptions>(opts =>
+                {
+                    opts.Username = "default-user";
+                    opts.Password = "default-pass";
+                });
+
+            var provider = services.BuildServiceProvider();
+            var validator = provider.GetRequiredService<OptionsMonitorValidator>();
+            var configured = provider.GetRequiredService<IOptionsMonitor<CredentialsBasedOptions>>()
+                .Get(BasicAuthenticationDefaults.AuthenticationScheme);
+
+            var valid = await validator.ValidateAsync(
+                "default-user",
+                "default-pass",
+                BasicAuthenticationDefaults.AuthenticationScheme);
+            var invalid = await validator.ValidateAsync(
+                "default-user",
+                "wrong-pass",
+                BasicAuthenticationDefaults.AuthenticationScheme);
+
+            Assert.AreEqual(typeof(OptionsMonitorValidator), configured.ValidatorType);
+            Assert.IsTrue(valid);
+            Assert.IsFalse(invalid);
         }
 
         [TestMethod]

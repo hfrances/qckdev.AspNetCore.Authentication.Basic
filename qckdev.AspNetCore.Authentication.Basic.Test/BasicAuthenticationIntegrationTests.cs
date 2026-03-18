@@ -106,5 +106,35 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
 
             Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
         }
+
+        [TestMethod]
+        public void ProtectedSecondaryEndpoint_WithValidCredentials_ReturnsOk()
+        {
+            using var client = new HttpClient { BaseAddress = LocalTestServiceManager.ServiceUri };
+            using var request = new HttpRequestMessage(HttpMethod.Get, "basic/protected-secondary");
+
+            var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes("otheruser:otherpass"));
+            request.Headers.Add("Authorization", $"Basic {credentials}");
+
+            var response = client.SendAsync(request).GetAwaiter().GetResult();
+
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            Assert.AreEqual("protected-secondary-ok-otheruser", content);
+        }
+
+        [TestMethod]
+        public void ProtectedSecondaryEndpoint_WithDefaultSchemeCredentials_ReturnsUnauthorized()
+        {
+            using var client = new HttpClient { BaseAddress = LocalTestServiceManager.ServiceUri };
+            using var request = new HttpRequestMessage(HttpMethod.Get, "basic/protected-secondary");
+
+            var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes("testuser:testpass"));
+            request.Headers.Add("Authorization", $"Basic {credentials}");
+
+            var response = client.SendAsync(request).GetAwaiter().GetResult();
+
+            Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
     }
 }

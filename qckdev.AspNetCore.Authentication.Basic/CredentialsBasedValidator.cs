@@ -28,11 +28,12 @@ namespace qckdev.AspNetCore.Authentication.Basic
         /// </summary>
         /// <param name="username">The username to validate.</param>
         /// <param name="password">The password to validate.</param>
+        /// <param name="authenticationScheme">The authentication scheme requesting validation.</param>
         /// <param name="cancellationToken">Cancellation token (not used).</param>
         /// <returns>True if both username and password match the configured credentials; otherwise false.</returns>
-        public Task<bool> ValidateAsync(string username, string password, CancellationToken cancellationToken = default)
+        public Task<bool> ValidateAsync(string username, string password, string authenticationScheme, CancellationToken cancellationToken = default)
         {
-            var options = _optionsMonitor.CurrentValue;
+            var options = _optionsMonitor.Get(authenticationScheme);
 
             if (string.IsNullOrEmpty(options.Username) || string.IsNullOrEmpty(options.Password))
             {

@@ -16,10 +16,19 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
     /// </summary>
     internal class TestBasicAuthenticationValidator : IBasicAuthenticationValidator
     {
-        public Task<bool> ValidateAsync(string username, string password, CancellationToken cancellationToken = default)
+        public Task<bool> ValidateAsync(string username, string password, string authenticationScheme, CancellationToken cancellationToken = default)
         {
             // Hardcoded test credentials
             var isValid = username == "testuser" && password == "testpass";
+            return Task.FromResult(isValid);
+        }
+    }
+
+    internal class SecondaryBasicAuthenticationValidator : IBasicAuthenticationValidator
+    {
+        public Task<bool> ValidateAsync(string username, string password, string authenticationScheme, CancellationToken cancellationToken = default)
+        {
+            var isValid = username == "otheruser" && password == "otherpass";
             return Task.FromResult(isValid);
         }
     }
@@ -51,14 +60,17 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
                             services.AddControllers().AddApplicationPart(typeof(BasicAuthenticationTestController).Assembly);
                             services
                                 .AddAuthentication()
-                                .AddScheme<BasicAuthenticationOptions, BasicAuthenticationHandler<BasicAuthenticationOptions>>(
-                                    BasicAuthenticationDefaults.AuthenticationScheme,
-                                    null,
+                                .AddBasicAuthentication<TestBasicAuthenticationValidator>(
                                     opts =>
                                     {
                                         opts.Realm = "Test Realm";
+                                    })
+                                .AddBasicAuthentication<SecondaryBasicAuthenticationValidator>(
+                                    "BasicSecondary",
+                                    opts =>
+                                    {
+                                        opts.Realm = "Secondary Realm";
                                     });
-                            services.AddScoped<IBasicAuthenticationValidator, TestBasicAuthenticationValidator>();
                             services.AddAuthorization();
                         });
                         webBuilder.Configure(app =>

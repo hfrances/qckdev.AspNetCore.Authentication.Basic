@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -17,8 +18,6 @@ namespace qckdev.AspNetCore.Authentication.Basic
     public class BasicAuthenticationHandler<TOptions> : AuthenticationHandler<TOptions>
         where TOptions : BasicAuthenticationOptions, new()
     {
-        private readonly IBasicAuthenticationValidator _validator;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="BasicAuthenticationHandler{TOptions}"/> class.
         /// </summary>
@@ -32,12 +31,9 @@ namespace qckdev.AspNetCore.Authentication.Basic
             IOptionsMonitor<TOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
-            ISystemClock clock,
-            IBasicAuthenticationValidator validator)
+            ISystemClock clock)
             : base(options, logger, encoder, clock)
-        {
-            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
-        }
+        { }
 
         /// <summary>
         /// Handles the authentication by extracting and validating basic credentials.
@@ -89,7 +85,13 @@ namespace qckdev.AspNetCore.Authentication.Basic
                     return AuthenticateResult.Fail("Empty credentials not allowed");
                 }
 
-                var isValid = await _validator.ValidateAsync(username, password, Context.RequestAborted);
+                var validator = ResolveValidator();
+                if (validator is null)
+                {
+                    return AuthenticateResult.Fail("Validator is not configured for this scheme");
+                }
+
+                var isValid = await validator.ValidateAsync(username, password, Scheme.Name, Context.RequestAborted);
                 if (!isValid)
                 {
                     return AuthenticateResult.Fail("Invalid username or password");
@@ -123,6 +125,22 @@ namespace qckdev.AspNetCore.Authentication.Basic
             Response.StatusCode = StatusCodes.Status401Unauthorized;
             Response.Headers.Add("WWW-Authenticate", $"Basic realm=\"{Options.Realm}\"");
             return Task.CompletedTask;
+        }
+
+        private IBasicAuthenticationValidator? ResolveValidator()
+        {
+            var validatorType = Options.ValidatorType;
+            if (validatorType is null)
+            {
+                return null;
+            }
+
+            if (!typeof(IBasicAuthenticationValidator).IsAssignableFrom(validatorType))
+            {
+                return null;
+            }
+
+            return Context.RequestServices.GetService(validatorType) as IBasicAuthenticationValidator;
         }
     }
 }

@@ -19,5 +19,12 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
         {
             return Ok($"protected-ok-{User?.Identity?.Name}");
         }
+
+        [HttpGet("protected-secondary")]
+        [Authorize(AuthenticationSchemes = "BasicSecondary")]
+        public IActionResult ProtectedSecondary()
+        {
+            return Ok($"protected-secondary-ok-{User?.Identity?.Name}");
+        }
     }
 }

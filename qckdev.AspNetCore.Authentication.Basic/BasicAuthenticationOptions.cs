@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication;
+using System;
 using System.Text;
 
 namespace qckdev.AspNetCore.Authentication.Basic
@@ -29,5 +30,10 @@ namespace qckdev.AspNetCore.Authentication.Basic
         /// Defaults to UTF-8.
         /// </summary>
         public Encoding? Encoding { get; set; } = Encoding.UTF8;
+
+        /// <summary>
+        /// Gets or sets the validator type used by this authentication scheme.
+        /// </summary>
+        public Type? ValidatorType { get; set; }
     }
 }

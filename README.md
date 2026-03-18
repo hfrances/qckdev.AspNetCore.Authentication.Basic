@@ -25,7 +25,7 @@ dotnet add package qckdev.AspNetCore.Authentication.Basic
 
 ## ⚡ Quick Start
 
-### Simple Usage with Static Credentials
+### Simple Usage with Static Credentials (Default Scheme)
 
 ```csharp
 using Microsoft.AspNetCore.Authentication;
@@ -33,8 +33,8 @@ using Microsoft.Extensions.DependencyInjection;
 using qckdev.AspNetCore.Authentication.Basic;
 
 services
-    .AddAuthentication("Basic")
-    .AddBasicAuthentication<CredentialsBasedValidator, CredentialsBasedOptions>(opts =>
+    .AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme)
+    .AddBasicAuthentication(opts =>
     {
         opts.Realm = "My API";
         opts.Username = "admin";
@@ -79,7 +79,11 @@ public class DatabaseValidator : IBasicAuthenticationValidator
         _passwordHasher = passwordHasher;
     }
 
-    public async Task<bool> ValidateAsync(string username, string password, CancellationToken cancellationToken = default)
+    public async Task<bool> ValidateAsync(
+        string username,
+        string password,
+        string authenticationScheme,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -102,7 +106,7 @@ Register it in your `Startup.cs` or `Program.cs`:
 services
     .AddScoped<IUserService, UserService>()
     .AddScoped<IPasswordHasher, PasswordHasher>()
-    .AddAuthentication("Basic")
+    .AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme)
     .AddBasicAuthentication<DatabaseValidator>(opts =>
     {
         opts.Realm = "Enterprise API";
@@ -142,6 +146,24 @@ public class LegacyController : ControllerBase { }
 public class EnterpriseController : ControllerBase { }
 ```
 
+### Registration Overloads
+
+The library supports the following registration patterns:
+
+```csharp
+// Default scheme + static credentials validator
+.AddBasicAuthentication(opts => { ... })
+
+// Named scheme + static credentials validator
+.AddBasicAuthentication("MyBasicScheme", opts => { ... })
+
+// Default scheme + custom validator
+.AddBasicAuthentication<MyValidator>(opts => { ... })
+
+// Named scheme + custom validator
+.AddBasicAuthentication<MyValidator>("MyBasicScheme", opts => { ... })
+```
+
 ### Custom Options Class
 
 Extend `BasicAuthenticationOptions` to add custom properties:
@@ -176,6 +198,7 @@ services
 | `Realm` | `string?` | `"Application"` | The realm sent in the WWW-Authenticate header (RFC 7617) |
 | `AllowEmptyCredentials` | `bool` | `false` | Whether to allow empty username or password |
 | `Encoding` | `Encoding?` | `UTF-8` | Character encoding for decoding credentials |
+| `ValidatorType` | `Type?` | `null` | Validator type assigned internally per scheme at registration time |
 
 ### CredentialsBasedOptions (extends BasicAuthenticationOptions)
 
@@ -205,7 +228,11 @@ Create a custom validator by implementing `IBasicAuthenticationValidator`:
 ```csharp
 public interface IBasicAuthenticationValidator
 {
-    Task<bool> ValidateAsync(string username, string password, CancellationToken cancellationToken = default);
+    Task<bool> ValidateAsync(
+        string username,
+        string password,
+        string authenticationScheme,
+        CancellationToken cancellationToken = default);
 }
 ```
 
@@ -221,7 +248,11 @@ public class ExternalServiceValidator : IBasicAuthenticationValidator
         _httpClient = httpClient;
     }
 
-    public async Task<bool> ValidateAsync(string username, string password, CancellationToken cancellationToken = default)
+    public async Task<bool> ValidateAsync(
+        string username,
+        string password,
+        string authenticationScheme,
+        CancellationToken cancellationToken = default)
     {
         var request = new { username, password };
         var response = await _httpClient.PostAsJsonAsync(
@@ -276,12 +307,13 @@ services
 
 This library includes comprehensive integration tests covering credential validation, header parsing, and edge cases.
 
-**7 integration tests** validate the complete authentication pipeline:
+Integration tests validate the complete authentication pipeline:
 - Public endpoint access
 - Challenge response (WWW-Authenticate)
 - Valid and invalid credentials
 - Malformed headers
 - Edge cases (empty password, etc.)
+- Multi-scheme authentication behavior
 
 For detailed testing documentation, see [Integration Testing Guide](docs/TESTING.md).
 

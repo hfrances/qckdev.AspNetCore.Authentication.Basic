@@ -23,7 +23,7 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
             var validator = new CredentialsBasedValidator(optionsMonitor);
 
             // Act
-            var result = await validator.ValidateAsync("admin", "password123");
+            var result = await validator.ValidateAsync("admin", "password123", BasicAuthenticationDefaults.AuthenticationScheme);
 
             // Assert
             Assert.IsTrue(result);
@@ -42,7 +42,7 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
             var validator = new CredentialsBasedValidator(optionsMonitor);
 
             // Act
-            var result = await validator.ValidateAsync("wronguser", "password123");
+            var result = await validator.ValidateAsync("wronguser", "password123", BasicAuthenticationDefaults.AuthenticationScheme);
 
             // Assert
             Assert.IsFalse(result);
@@ -61,7 +61,7 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
             var validator = new CredentialsBasedValidator(optionsMonitor);
 
             // Act
-            var result = await validator.ValidateAsync("admin", "wrongpassword");
+            var result = await validator.ValidateAsync("admin", "wrongpassword", BasicAuthenticationDefaults.AuthenticationScheme);
 
             // Assert
             Assert.IsFalse(result);
@@ -80,7 +80,7 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
             var validator = new CredentialsBasedValidator(optionsMonitor);
 
             // Act
-            var result = await validator.ValidateAsync("admin", "password123");
+            var result = await validator.ValidateAsync("admin", "password123", BasicAuthenticationDefaults.AuthenticationScheme);
 
             // Assert
             Assert.IsFalse(result, "Comparison should be case-sensitive");
@@ -99,7 +99,7 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
             var validator = new CredentialsBasedValidator(optionsMonitor);
 
             // Act
-            var result = await validator.ValidateAsync("user", "password123");
+            var result = await validator.ValidateAsync("user", "password123", BasicAuthenticationDefaults.AuthenticationScheme);
 
             // Assert
             Assert.IsFalse(result);
@@ -118,7 +118,7 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
             var validator = new CredentialsBasedValidator(optionsMonitor);
 
             // Act
-            var result = await validator.ValidateAsync("admin", "pass");
+            var result = await validator.ValidateAsync("admin", "pass", BasicAuthenticationDefaults.AuthenticationScheme);
 
             // Assert
             Assert.IsFalse(result);
@@ -137,7 +137,7 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
             var validator = new CredentialsBasedValidator(optionsMonitor);
 
             // Act
-            var result = await validator.ValidateAsync("user", "password123");
+            var result = await validator.ValidateAsync("user", "password123", BasicAuthenticationDefaults.AuthenticationScheme);
 
             // Assert
             Assert.IsFalse(result);
@@ -156,7 +156,7 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
             var validator = new CredentialsBasedValidator(optionsMonitor);
 
             // Act
-            var result = await validator.ValidateAsync("admin", "pass");
+            var result = await validator.ValidateAsync("admin", "pass", BasicAuthenticationDefaults.AuthenticationScheme);
 
             // Assert
             Assert.IsFalse(result);
@@ -184,7 +184,7 @@ namespace qckdev.AspNetCore.Authentication.Basic.Test
             var cts = new CancellationTokenSource();
 
             // Act
-            var result = await validator.ValidateAsync("admin", "password123", cts.Token);
+            var result = await validator.ValidateAsync("admin", "password123", BasicAuthenticationDefaults.AuthenticationScheme, cts.Token);
 
             // Assert
             Assert.IsTrue(result);
