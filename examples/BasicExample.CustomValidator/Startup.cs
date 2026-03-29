@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using qckdev.AspNetCore.Authentication.Basic;
+using BasicExample.CustomValidator.Swagger;
 
 namespace BasicExample.CustomValidator
 {
@@ -30,6 +31,7 @@ namespace BasicExample.CustomValidator
 
             services.AddAuthorization();
             services.AddControllers();
+            services.AddSwagger();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -43,6 +45,8 @@ namespace BasicExample.CustomValidator
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseSwagger();
 
             app.UseEndpoints(endpoints =>
             {

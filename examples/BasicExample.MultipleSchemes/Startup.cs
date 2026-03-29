@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using qckdev.AspNetCore.Authentication.Basic;
+using BasicExample.MultipleSchemes.Swagger;
 
 namespace BasicExample.MultipleSchemes
 {
@@ -40,6 +41,7 @@ namespace BasicExample.MultipleSchemes
 
             services.AddAuthorization();
             services.AddControllers();
+            services.AddSwagger();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -53,6 +55,8 @@ namespace BasicExample.MultipleSchemes
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseSwagger();
 
             app.UseEndpoints(endpoints =>
             {

@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\qckdev.AspNetCore.Authentication.Basic\qckdev.AspNetCore.Authentication.Basic.csproj" />
   </ItemGroup>
 
