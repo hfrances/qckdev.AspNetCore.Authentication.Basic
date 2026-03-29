@@ -1,6 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
+using System.IO;
+using System.Reflection;
 using qckdev.AspNetCore.Authentication.Basic;
 
 namespace BasicExample.StaticCredentials.Swagger
@@ -12,6 +16,7 @@ namespace BasicExample.StaticCredentials.Swagger
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Basic Static Credentials API", Version = "v1" });
+                c.AddXmlCommentsFromCurrentAssembly();
 
                 c.AddSecurityDefinition(BasicAuthenticationDefaults.AuthenticationScheme, new OpenApiSecurityScheme
                 {
@@ -39,6 +44,18 @@ namespace BasicExample.StaticCredentials.Swagger
             });
 
             return services;
+        }
+
+        public static SwaggerGenOptions AddXmlCommentsFromCurrentAssembly(this SwaggerGenOptions options)
+        {
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            if (File.Exists(xmlPath))
+            {
+                options.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+            }
+
+            return options;
         }
 
         public static IApplicationBuilder UseSwagger(this IApplicationBuilder app)
